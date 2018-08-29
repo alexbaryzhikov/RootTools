@@ -19,7 +19,6 @@
  * See each License for the specific language governing permissions and
  * limitations under that License.
  */
-
 package com.stericson.RootTools;
 
 import android.app.Activity;
@@ -27,13 +26,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import com.stericson.RootShell.RootShell;
-import com.stericson.RootShell.exceptions.RootDeniedException;
-import com.stericson.RootShell.execution.Command;
-import com.stericson.RootShell.execution.Shell;
 import com.stericson.RootTools.containers.Mount;
 import com.stericson.RootTools.containers.Permissions;
 import com.stericson.RootTools.containers.Symlink;
+import com.stericson.RootTools.exceptions.RootDeniedException;
+import com.stericson.RootTools.execution.Command;
+import com.stericson.RootTools.execution.Shell;
 import com.stericson.RootTools.internal.Remounter;
 import com.stericson.RootTools.internal.RootToolsInternalMethods;
 import com.stericson.RootTools.internal.Runner;
@@ -44,39 +42,20 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
+/**
+ * This class is the gateway to every functionality within the RootTools library.The developer
+ * should only have access to this class and this class only.This means that this class should
+ * be the only one to be public.The rest of the classes within this library must not have the
+ * public modifier.
+ * <p/>
+ * All methods and Variables that the developer may need to have access to should be here.
+ * <p/>
+ * If a method, or a specific functionality, requires a fair amount of code, or work to be done,
+ * then that functionality should probably be moved to its own class and the call to it done
+ * here.For examples of this being done, look at the remount functionality.
+ */
+@SuppressWarnings({"WeakerAccess", "unused", "UnusedReturnValue"})
 public final class RootTools {
-
-    /**
-     * This class is the gateway to every functionality within the RootTools library.The developer
-     * should only have access to this class and this class only.This means that this class should
-     * be the only one to be public.The rest of the classes within this library must not have the
-     * public modifier.
-     * <p/>
-     * All methods and Variables that the developer may need to have access to should be here.
-     * <p/>
-     * If a method, or a specific functionality, requires a fair amount of code, or work to be done,
-     * then that functionality should probably be moved to its own class and the call to it done
-     * here.For examples of this being done, look at the remount functionality.
-     */
-
-    private static RootToolsInternalMethods rim = null;
-
-    public static void setRim(RootToolsInternalMethods rim) {
-        RootTools.rim = rim;
-    }
-
-    private static final RootToolsInternalMethods getInternals() {
-        if (rim == null) {
-            RootToolsInternalMethods.getInstance();
-            return rim;
-        } else {
-            return rim;
-        }
-    }
-
-    // --------------------
-    // # Public Variables #
-    // --------------------
 
     public static boolean debugMode = false;
     public static String utilPath;
@@ -90,7 +69,6 @@ public final class RootTools {
      */
     public static boolean handlerEnabled = true;
 
-
     /**
      * Setting this will change the default command timeout.
      * <p/>
@@ -98,14 +76,20 @@ public final class RootTools {
      */
     public static int default_Command_Timeout = 20000;
 
+    private static RootToolsInternalMethods rim = null;
 
-    // ---------------------------
-    // # Public Variable Getters #
-    // ---------------------------
+    public static void setRim(RootToolsInternalMethods rim) {
+        RootTools.rim = rim;
+    }
 
-    // ------------------
-    // # Public Methods #
-    // ------------------
+    private static RootToolsInternalMethods getInternals() {
+        if (rim == null) {
+            RootToolsInternalMethods.getInstance();
+            return rim;
+        } else {
+            return rim;
+        }
+    }
 
     /**
      * This will check a given binary, determine if it exists and determine that it has either the
@@ -121,8 +105,6 @@ public final class RootTools {
 
     /**
      * This will close all open shells.
-     *
-     * @throws IOException
      */
     public static void closeAllShells() throws IOException {
         RootShell.closeAllShells();
@@ -130,8 +112,6 @@ public final class RootTools {
 
     /**
      * This will close the custom shell that you opened.
-     *
-     * @throws IOException
      */
     public static void closeCustomShell() throws IOException {
         RootShell.closeCustomShell();
@@ -141,7 +121,6 @@ public final class RootTools {
      * This will close either the root shell or the standard shell depending on what you specify.
      *
      * @param root a <code>boolean</code> to specify whether to close the root shell or the standard shell.
-     * @throws IOException
      */
     public static void closeShell(boolean root) throws IOException {
         RootShell.closeShell(root);
@@ -229,7 +208,6 @@ public final class RootTools {
     /**
      * @param binaryName String that represent the binary to find.
      * @param singlePath boolean that represents whether to return a single path or multiple.
-     *
      * @return <code>List<String></code> containing the paths the binary was found at.
      */
     public static List<String> findBinary(String binaryName, boolean singlePath) {
@@ -278,9 +256,6 @@ public final class RootTools {
      *
      * @param shellPath a <code>String</code> to Indicate the path to the shell that you want to open.
      * @param timeout   an <code>int</code> to Indicate the length of time before giving up on opening a shell.
-     * @throws TimeoutException
-     * @throws com.stericson.RootShell.exceptions.RootDeniedException
-     * @throws IOException
      */
     public static Shell getCustomShell(String shellPath, int timeout) throws IOException, TimeoutException, RootDeniedException {
         return RootShell.getCustomShell(shellPath, timeout);
@@ -291,9 +266,6 @@ public final class RootTools {
      * and for closing the shell when you are done using it.
      *
      * @param shellPath a <code>String</code> to Indicate the path to the shell that you want to open.
-     * @throws TimeoutException
-     * @throws com.stericson.RootShell.exceptions.RootDeniedException
-     * @throws IOException
      */
     public static Shell getCustomShell(String shellPath) throws IOException, TimeoutException, RootDeniedException {
         return RootTools.getCustomShell(shellPath, 10000);
@@ -362,9 +334,6 @@ public final class RootTools {
      * @param timeout      an <code>int</code> to Indicate the length of time to wait before giving up on opening a shell.
      * @param shellContext the context to execute the shell with
      * @param retry        a <code>int</code> to indicate how many times the ROOT shell should try to open with root priviliges...
-     * @throws TimeoutException
-     * @throws com.stericson.RootShell.exceptions.RootDeniedException
-     * @throws IOException
      */
     public static Shell getShell(boolean root, int timeout, Shell.ShellContext shellContext, int retry) throws IOException, TimeoutException, RootDeniedException {
         return RootShell.getShell(root, timeout, shellContext, retry);
@@ -377,9 +346,6 @@ public final class RootTools {
      * @param root         a <code>boolean</code> to Indicate whether or not you want to open a root shell or a standard shell
      * @param timeout      an <code>int</code> to Indicate the length of time to wait before giving up on opening a shell.
      * @param shellContext the context to execute the shell with
-     * @throws TimeoutException
-     * @throws com.stericson.RootShell.exceptions.RootDeniedException
-     * @throws IOException
      */
     public static Shell getShell(boolean root, int timeout, Shell.ShellContext shellContext) throws IOException, TimeoutException, RootDeniedException {
         return getShell(root, timeout, shellContext, 3);
@@ -391,9 +357,6 @@ public final class RootTools {
      *
      * @param root         a <code>boolean</code> to Indicate whether or not you want to open a root shell or a standard shell
      * @param shellContext the context to execute the shell with
-     * @throws TimeoutException
-     * @throws com.stericson.RootShell.exceptions.RootDeniedException
-     * @throws IOException
      */
     public static Shell getShell(boolean root, Shell.ShellContext shellContext) throws IOException, TimeoutException, RootDeniedException {
         return getShell(root, 0, shellContext, 3);
@@ -405,9 +368,6 @@ public final class RootTools {
      *
      * @param root    a <code>boolean</code> to Indicate whether or not you want to open a root shell or a standard shell
      * @param timeout an <code>int</code> to Indicate the length of time to wait before giving up on opening a shell.
-     * @throws TimeoutException
-     * @throws com.stericson.RootShell.exceptions.RootDeniedException
-     * @throws IOException
      */
     public static Shell getShell(boolean root, int timeout) throws IOException, TimeoutException, RootDeniedException {
         return getShell(root, timeout, Shell.defaultContext, 3);
@@ -418,9 +378,6 @@ public final class RootTools {
      * and for closing the shell when you are done using it.
      *
      * @param root a <code>boolean</code> to Indicate whether or not you want to open a root shell or a standard shell
-     * @throws TimeoutException
-     * @throws com.stericson.RootShell.exceptions.RootDeniedException
-     * @throws IOException
      */
     public static Shell getShell(boolean root) throws IOException, TimeoutException, RootDeniedException {
         return RootTools.getShell(root, 0);
@@ -432,7 +389,6 @@ public final class RootTools {
      * @param path The partition to find the space for.
      * @return the amount if space found within the desired partition. If the space was not found
      * then the value is -1
-     * @throws TimeoutException
      */
     public static long getSpace(String path) {
         return getInternals().getSpace(path);
@@ -490,12 +446,12 @@ public final class RootTools {
     /**
      * Checks whether the toolbox or busybox binary contains a specific util
      *
-     * @param util
+     * @param util Util
      * @param box  Should contain "toolbox" or "busybox"
      * @return true if it contains this util
      */
     public static boolean hasUtil(final String util, final String box) {
-        //TODO Convert this to use the new shell.
+        // TODO Convert this to use the new shell.
         return getInternals().hasUtil(util, box);
     }
 
@@ -564,6 +520,7 @@ public final class RootTools {
     public static boolean isAppletAvailable(String applet) {
         return RootTools.isAppletAvailable(applet, "");
     }
+
     /**
      * @return <code>true</code> if your app has been given root access.
      * @throws TimeoutException if this operation times out. (cannot determine if access is given)
@@ -577,7 +534,6 @@ public final class RootTools {
      *
      * @param timeout The timeout
      * @param retries The number of retries
-     *
      * @return <code>true</code> if your app has been given root access.
      * @throws TimeoutException if this operation times out. (cannot determine if access is given)
      */
@@ -693,8 +649,6 @@ public final class RootTools {
      * This restarts only Android OS without rebooting the whole device. This does NOT work on all
      * devices. This is done by killing the main init process named zygote. Zygote is restarted
      * automatically by Android after killing it.
-     *
-     * @throws TimeoutException
      */
     public static void restartAndroid() {
         RootTools.log("Restart Android");
@@ -722,8 +676,6 @@ public final class RootTools {
      *
      * @param shell   The shell to execute the command on, this can be a root shell or a standard shell.
      * @param command The command to execute in the shell
-     *
-     * @throws IOException
      */
     public static void runShellCommand(Shell shell, Command command) throws IOException {
         shell.add(command);

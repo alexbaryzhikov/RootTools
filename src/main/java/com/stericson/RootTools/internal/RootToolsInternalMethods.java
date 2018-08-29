@@ -32,29 +32,24 @@ import android.os.StatFs;
 import android.util.Log;
 
 import com.stericson.RootTools.Constants;
-import com.stericson.RootShell.RootShell;
-import com.stericson.RootShell.execution.Command;
-import com.stericson.RootShell.execution.Shell;
+import com.stericson.RootTools.RootShell;
 import com.stericson.RootTools.RootTools;
 import com.stericson.RootTools.containers.Mount;
 import com.stericson.RootTools.containers.Permissions;
 import com.stericson.RootTools.containers.Symlink;
+import com.stericson.RootTools.execution.Command;
+import com.stericson.RootTools.execution.Shell;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 
+@SuppressWarnings("WeakerAccess")
 public final class RootToolsInternalMethods {
-
-    // --------------------
-    // # Internal methods #
-    // --------------------
 
     protected RootToolsInternalMethods() {
     }
@@ -95,13 +90,12 @@ public final class RootToolsInternalMethods {
 
             RootTools.log(permissions.getOtherPermissions());
 
-            StringBuilder finalPermissions = new StringBuilder();
-            finalPermissions.append(parseSpecialPermissions(rawPermissions));
-            finalPermissions.append(parsePermissions(permissions.getUserPermissions()));
-            finalPermissions.append(parsePermissions(permissions.getGroupPermissions()));
-            finalPermissions.append(parsePermissions(permissions.getOtherPermissions()));
+            String finalPermissions = String.valueOf(parseSpecialPermissions(rawPermissions)) +
+                    parsePermissions(permissions.getUserPermissions()) +
+                    parsePermissions(permissions.getGroupPermissions()) +
+                    parsePermissions(permissions.getOtherPermissions());
 
-            permissions.setPermissions(Integer.parseInt(finalPermissions.toString()));
+            permissions.setPermissions(Integer.parseInt(finalPermissions));
 
             return permissions;
         }
@@ -230,6 +224,7 @@ public final class RootToolsInternalMethods {
                         if (preserveFileAttributes) {
                             // get permissions of source before overwriting
                             Permissions permissions = getFilePermissionsSymlinks(source);
+                            assert permissions != null;
                             filePermission = permissions.getPermissions();
                         }
 
@@ -390,7 +385,7 @@ public final class RootToolsInternalMethods {
             }
 
             RootTools.remount("/system", "ro");
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
     }
 
@@ -444,7 +439,7 @@ public final class RootToolsInternalMethods {
             throw new Exception("Path is null, please specifiy a path");
         }
 
-        final List<String> results = new ArrayList<String>();
+        final List<String> results = new ArrayList<>();
 
         Command command = new Command(Constants.BBA, false, path + "busybox --list") {
             @Override
@@ -575,7 +570,7 @@ public final class RootToolsInternalMethods {
         try {
             double multiplier = 1.0;
             char c;
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for (int i = 0; i < spaceStr.length(); i++) {
                 c = spaceStr.charAt(i);
                 if (!Character.isDigit(c) && c != '.') {
@@ -639,12 +634,8 @@ public final class RootToolsInternalMethods {
             return false;
         }
 
-        if (installer.isBinaryInstalled("nativetools")) {
-            InternalVariables.nativeToolsReady = true;
-        } else {
-            InternalVariables.nativeToolsReady = installer.installBinary(nativeToolsId,
-                    "nativetools", "700");
-        }
+        InternalVariables.nativeToolsReady = installer.isBinaryInstalled("nativetools") ||
+                installer.installBinary(nativeToolsId, "nativetools", "700");
         return InternalVariables.nativeToolsReady;
     }
 
@@ -685,7 +676,7 @@ public final class RootToolsInternalMethods {
                                     RootTools.log("Symlink found.");
                                     symlink_final = symlink[symlink.length - 1];
                                 }
-                            } catch (Exception e) {
+                            } catch (Exception ignored) {
                             }
 
                             try {
@@ -728,7 +719,7 @@ public final class RootToolsInternalMethods {
 
         InternalVariables.mounts = new ArrayList<>();
 
-        if(null == InternalVariables.mounts || InternalVariables.mounts.isEmpty()) {
+        if (null == InternalVariables.mounts || InternalVariables.mounts.isEmpty()) {
             Shell shell = RootTools.getShell(true);
 
             Command cmd = new Command(Constants.GET_MOUNTS,
@@ -742,7 +733,7 @@ public final class RootToolsInternalMethods {
 
                         String[] fields = line.split(" ");
 
-                        if(fields.length > 3) {
+                        if (fields.length > 3) {
                             InternalVariables.mounts.add(new Mount(new File(fields[0]), // device
                                     new File(fields[1]), // mountPoint
                                     fields[2], // fstype
@@ -803,7 +794,6 @@ public final class RootToolsInternalMethods {
      * @param path The partition to find the space for.
      * @return the amount if space found within the desired partition. If the space was not found
      * then the value is -1
-     * @throws TimeoutException
      */
     public long getSpace(String path) {
         InternalVariables.getSpaceFor = path;
@@ -826,7 +816,7 @@ public final class RootToolsInternalMethods {
             Shell.startRootShell().add(command);
             commandWait(Shell.startRootShell(), command);
 
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
 
         if (InternalVariables.space != null) {
@@ -880,7 +870,7 @@ public final class RootToolsInternalMethods {
         RootTools.log("Looking for Symlink for " + file);
 
         try {
-            final List<String> results = new ArrayList<String>();
+            final List<String> results = new ArrayList<>();
 
             Command command = new Command(Constants.GSYM, false, "ls -l " + file) {
 
@@ -1009,8 +999,8 @@ public final class RootToolsInternalMethods {
         }
         File path = Environment.getExternalStorageDirectory();
         StatFs stat = new StatFs(path.getPath());
-        long blockSize = 0;
-        long availableBlocks = 0;
+        long blockSize;
+        long availableBlocks;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
             blockSize = stat.getBlockSize();
             availableBlocks = stat.getAvailableBlocks();
@@ -1024,7 +1014,7 @@ public final class RootToolsInternalMethods {
     /**
      * Checks whether the toolbox or busybox binary contains a specific util
      *
-     * @param util
+     * @param util Util
      * @param box  Should contain "toolbox" or "busybox"
      * @return true if it contains this util
      */

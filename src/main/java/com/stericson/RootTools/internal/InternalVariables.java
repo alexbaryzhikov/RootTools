@@ -22,25 +22,21 @@
 
 package com.stericson.RootTools.internal;
 
-import java.util.ArrayList;
-import java.util.regex.Pattern;
-
 import com.stericson.RootTools.containers.Mount;
 import com.stericson.RootTools.containers.Permissions;
 import com.stericson.RootTools.containers.Symlink;
 
-public class InternalVariables
-{
+import java.util.ArrayList;
+import java.util.regex.Pattern;
 
-    // ----------------------
-    // # Internal Variables #
-    // ----------------------
-
-
+@SuppressWarnings("unused")
+public class InternalVariables {
+    // regex to get pid out of ps line, example:
+    // root 2611 0.0 0.0 19408 2104 pts/2 S 13:41 0:00 bash
+    private static final String PS_REGEX = "^\\S+\\s+([0-9]+).*$";
     protected static boolean nativeToolsReady = false;
     protected static boolean found = false;
     protected static boolean processRunning = false;
-
     protected static String[] space;
     protected static String getSpaceFor;
     protected static String busyboxVersion;
@@ -49,14 +45,9 @@ public class InternalVariables
     protected static ArrayList<Symlink> symlinks;
     protected static String inode = "";
     protected static Permissions permissions;
-
-    // regex to get pid out of ps line, example:
-    // root 2611 0.0 0.0 19408 2104 pts/2 S 13:41 0:00 bash
-    protected static final String PS_REGEX = "^\\S+\\s+([0-9]+).*$";
     protected static Pattern psPattern;
 
-    static
-    {
+    static {
         psPattern = Pattern.compile(PS_REGEX);
     }
 }
